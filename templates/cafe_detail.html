@@ -1,0 +1,27 @@
+<!-- templates/cafe_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cafe.name }} - Cafe Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>{{ cafe.name }}</h1>
+    </header>
+
+    <main>
+        <h2>Details</h2>
+        <p><strong>Address:</strong> {{ cafe.address }}</p>
+        <p><strong>Rating:</strong> {{ cafe.rating }}</p>
+        <p><strong>Description:</strong> {{ cafe.description }}</p>
+        <p><strong>Location:</strong> Latitude: {{ cafe.latitude }}, Longitude: {{ cafe.longitude }}</p>
+    </main>
+
+    <footer>
+        <p>© 2024 CafeFinder. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

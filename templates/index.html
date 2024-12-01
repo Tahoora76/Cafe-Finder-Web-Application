@@ -1,0 +1,20 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Finder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Cafe Finder</h1>
+        <form action="/search_results" method="get">
+            <label for="place">Enter location to find cafes:</label>
+            <input type="text" id="place" name="place" required>
+            <button type="submit">Search</button>
+        </form>
+    </header>
+</body>
+</html>
