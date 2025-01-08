@@ -1,95 +1,120 @@
-from flask import Flask, render_template, request
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+import threading
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
 import time
+import json
+import os
+from Cafe_detail_Scrapper import Scrapper
 import requests
-from sqlalchemy import create_engine
 
+# Selenium configuration
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_experimental_option("detach", True)
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-usb')
+chrome_options.add_argument('--enable-logging')
+chrome_options.add_argument('--v=1')
+chrome_options.add_argument('--headless')
+
+driver = webdriver.Chrome(options=chrome_options)
+
+# Global flag to track scraping status
+scraping_in_progress = False
+LAT_LON = None
+
+def get_lat_long(city, api_key):
+    # URL for OpenWeatherMap Geocoding API
+    url = f"http://api.openweathermap.org/geo/1.0/direct?q={city}&limit=1&appid={api_key}"
+
+    # Make the GET request to the API
+    response = requests.get(url)
+
+    # Check if the response status is OK (200)
+    if response.status_code == 200:
+        data = response.json()
+
+        # If data is available, extract latitude and longitude
+        if data:
+            lat = data[0]['lat']
+            lon = data[0]['lon']
+            return [lat, lon]
+        else:
+            return None, None  # No data found
+    else:
+        print("Error fetching data from OpenWeatherMap API")
+        return None, None  # API request failed
+
+
+
+
+
+
+# Flask app setup
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///cafes.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
-class Cafe(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    rating = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
-
-    def __repr__(self):
-        return f'<Cafe {self.name}>'
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/search_results', methods=['GET'])
-def search_results():
-    place = request.args.get('place')
-    cafes = scrape_cafes(place)
 
-    api_key = "YOUR_GOOGLE_MAPS_API_KEY"
-    geocode_url = f"https://maps.googleapis.com/maps/api/geocode/json?address={place}&key={api_key}"
-    response = requests.get(geocode_url)
-    location_data = response.json()
+@app.route('/search', methods=['POST'])
+def search():
+    location = request.form.get('location')
+    lat_lon = get_lat_long(location, "4ee8489b3062de9b6fd9731f101fbbea")
+    LAT_LON = lat_lon
 
-    latitude = 0.0
-    longitude = 0.0
-    if location_data['results']:
-        latitude = location_data['results'][0]['geometry']['location']['lat']
-        longitude = location_data['results'][0]['geometry']['location']['lng']
+    if location:
+        def run_scraper():
+            Scrapper(location)  # Run the main scraper
+            return redirect(url_for('result'))
 
-    return render_template('search_results.html', cafes=cafes, place=place, latitude=latitude, longitude=longitude)
+        # Start the scraper in a separate thread
+        thread = threading.Thread(target=run_scraper)
+        thread.start()
 
-@app.route('/cafe/<int:cafe_id>')
-def cafe_detail(cafe_id):
-    cafe = Cafe.query.get_or_404(cafe_id)
-    return render_template('cafe_detail.html', cafe=cafe)
+        # Redirect to loading page
+        return redirect(url_for('loading'))
+    else:
+        return "Location is required", 400
 
-def scrape_cafes(location):
-    options = Options()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
 
-    driver.get(f"https://www.google.com/maps/search/cafes+in+{location}")
-    time.sleep(5)
+@app.route('/loading')
+def loading():
+    return render_template('loading.html')
 
-    cafes_data = []
 
-    cafes = driver.find_elements(By.CLASS_NAME, 'section-result')
-    for cafe in cafes:
-        try:
-            name = cafe.find_element(By.CLASS_NAME, 'section-result-title').text
-            address = cafe.find_element(By.CLASS_NAME, 'section-result-location').text
-            rating = float(cafe.find_element(By.CLASS_NAME, 'cards-rating-score').text)
-            latitude, longitude = get_coordinates(cafe)
+@app.route('/results', methods=['GET'])
+def results():
+    if scraping_in_progress:
+        return jsonify({"message": "Data is still being scraped. Please check back later."}), 202
 
-            cafe_entry = Cafe(
-                name=name,
-                address=address,
-                rating=rating,
-                description="N/A",
-                latitude=latitude,
-                longitude=longitude
-            )
-            db.session.add(cafe_entry)
-            cafes_data.append(cafe_entry)
-        except Exception as e:
-            continue
+    try:
+        with open('cafe_details.json', 'r') as file:
+            cafes = json.load(file)
+        return render_template('result.html', cafes=cafes)
+    except FileNotFoundError:
+        return jsonify({"message": "No data found. Please start a search first."}), 404
 
-    db.session.commit()
-    driver.quit()
 
-    return cafes_data
+@app.route('/cafe_detail')
+def cafe_detail():
+    cafe_name = request.args.get('name')  # Get the name parameter from the URL
 
-def get_coordinates(cafe):
-    return (12.9716, 77.5946)
+    # Load the cafe details from the JSON file
+    with open('cafe_details.json', 'r') as file:
+        cafes_data = json.load(file)
+
+    # Find the cafe by its name
+    cafe = next((c for c in cafes_data if c["Name"] == cafe_name), None)
+
+    if cafe:
+        return render_template('cafe_detail.html', cafe=cafe)
+    else:
+        return "Cafe not found", 404
+
 
 if __name__ == '__main__':
     app.run(debug=True)
