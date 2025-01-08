@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafe Finder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    /* Your existing CSS */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      padding: 10px 20px;
+      background-color: #ff6f61;
+    }
+
+    .navbar h1 {
+      font-size: 1.5em;
+    }
+
+    .navbar .nav-links a {
+      color: white;
+      text-decoration: none;
+      margin-left: 15px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 0.5fr 2.5fr 1fr; /* Further reduced filter section */
+      height: calc(100vh - 50px);
+    }
+
+    .filters {
+      background-color: #fff;
+      padding: 10px;
+      overflow-y: auto;
+      border-right: 1px solid #ddd;
+    }
+
+    .filters::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .filters::-webkit-scrollbar-thumb {
+      background-color: #ff6f61;
+      border-radius: 10px;
+    }
+
+    .filter-group {
+      margin-bottom: 15px; /* Added spacing between filter groups */
+    }
+
+    .filter-group h3 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    .filter-button {
+      display: flex;
+      flex-direction: column; /* Arrange emoji and text vertically */
+      align-items: center;
+      justify-content: center;
+      width: 80px; /* Adjust width to make it square */
+      height: 80px; /* Match height to width for square shape */
+      margin: 10px 5px; /* Add spacing between buttons */
+      padding: 0;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 20px; /* Rounded corners */
+      cursor: pointer;
+      font-size: 0.8em; /* Adjust text size */
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-button i {
+      font-size: 1.5em; /* Emoji size */
+      margin-bottom: 5px; /* Space between emoji and text */
+    }
+
+    .filter-button.active {
+      background-color: #ff6f61;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .main-content {
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    .main-content h2 {
+      margin-bottom: 15px;
+    }
+
+    .cafes {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cafe-card {
+      display: flex;
+      gap: 10px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .cafe-card img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .map-section {
+      background-color: #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-section h2 {
+      padding: 10px;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">
+      <i class="fas fa-laptop-house"></i> Cafe Finder
+    </div>
+    <div class="nav-links">
+      <a href="#">All Cities</a>
+      <a href="#">Suggest Places</a>
+      <a href="#">Join Community</a>
+    </div>
+  </div>
+  <div class="container">
+    <aside class="filters">
+      <h2>Filters</h2>
+      <div class="filter-group">
+        <h3>My Places</h3>
+        <button class="filter-button" data-service="liked">
+          <i class="fas fa-heart"></i> Liked
+        </button>
+      </div>
+      <div class="filter-group">
+        <h3>Productivity</h3>
+        <button class="filter-button" data-service="wifi"><i class="fas fa-wifi"></i> Wi-Fi</button>
+        <button class="filter-button" data-service="sockets"><i class="fas fa-plug"></i> Sockets</button>
+        <button class="filter-button" data-service="tables"><i class="fas fa-chair"></i> Tables</button>
+        <button class="filter-button" data-service="calls"><i class="fas fa-phone"></i> Calls</button>
+      </div>
+      <div class="filter-group">
+        <h3>Community</h3>
+        <button class="filter-button" data-service="groups"><i class="fas fa-users"></i> Groups</button>
+        <button class="filter-button" data-service="workvibe"><i class="fas fa-laptop-code"></i> Work Vibe</button>
+      </div>
+      <div class="filter-group">
+        <h3>Service</h3>
+        <button class="filter-button" data-service="coffee"><i class="fas fa-coffee"></i> Coffee</button>
+        <button class="filter-button" data-service="food"><i class="fas fa-utensils"></i> Food</button>
+        <button class="filter-button" data-service="veggie"><i class="fas fa-seedling"></i> Veggie</button>
+        <button class="filter-button" data-service="cards">
+          <i class="fas fa-credit-card"></i> Cards
+        </button>
+      </div>
+      <div class="filter-group">
+        <h3>Space</h3>
+        <button class="filter-button" data-service="wheelchair accessible"><i class="fas fa-wheelchair"></i>Wheelchair Accessible</button>
+        <button class="filter-button" data-service="outdoor"><i class="fas fa-tree"></i>Outdoor</button>
+        <button class="filter-button" data-service="parking"><i class="fas fa-parking"></i>Parking</button>
+        <button class="filter-button" data-service="restroom"><i class="fas fa-restroom"></i>Restroom</button>
+      </div>
+    </aside>
+    <main class="main-content">
+      <h2>Work-Friendly Places</h2>
+      <div class="cafes">
+        <!-- Dynamically loaded cafes will go here -->
+        {% for cafe in cafes %}
+          {% if cafe.Name and cafe.Address != "not found" and cafe.Rating %}
+            <div class="cafe-card">
+              <img src="{{ cafe.Image }}" alt="Cafe">
+              <div>
+                <!-- Link to detailed cafe page -->
+                <h3><a href="{{ url_for('cafe_detail', name=cafe.Name) }}">{{ cafe.Name }}</a></h3>
+                <p>{{ cafe.Address }}</p>
+                <p>⭐ {{ cafe.Rating }} ({{ cafe.Reviews }} reviews)</p>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </main>
+
+    <aside class="map-section">
+      <h2>Map</h2>
+      <div id="map"></div>
+    </aside>
+  </div>
+
+  <script>
+  // The JavaScript filter functionality
+  let activeFilters = []; // Store active filters
+
+  function filterCafes(service) {
+    const cafes = document.querySelectorAll('.cafe-card');
+
+    // Toggle the selected filter
+    if (activeFilters.includes(service)) {
+      activeFilters = activeFilters.filter(filter => filter !== service); // Remove if already active
+    } else {
+      activeFilters.push(service); // Add if not active
+    }
+
+    // Filter cafes based on active filters
+    cafes.forEach(cafe => {
+      const cafeServices = cafe.getAttribute('data-services').toLowerCase(); // Convert to lowercase for case-insensitive matching
+      const matches = activeFilters.every(filter => {
+        if (filter === 'veggie') {
+          return cafeServices.includes('vegetarian options') || cafeServices.includes('vegan options');
+        }
+        if (filter === 'outdoor') {
+          return cafeServices.includes('outdoor seating');
+        }
+        if (filter === 'restroom') {
+          return cafeServices.includes('toilets');
+        }
+        // Default case for other filters
+        return cafeServices.includes(filter.toLowerCase());
+      });
+
+      // Show or hide the cafe based on whether it matches all active filters
+      cafe.style.display = matches ? 'block' : 'none';
+    });
+  }
+
+  // Add event listeners to filter buttons
+  document.querySelectorAll('.filter-button').forEach(button => {
+    button.addEventListener('click', (event) => {
+      const selectedService = event.target.getAttribute('data-service');
+      const buttonElement = event.target;
+
+      // Toggle active state on button
+      buttonElement.classList.toggle('active');
+
+      // Call the filter function
+      filterCafes(selectedService);
+    });
+  });
+
+  function initMap() {
+    const map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 18.516726, lng: 73.856255 }, // Default location: lo
+      zoom: 10,
+    });
+  }
+
+  // Load Google Maps
+  document.addEventListener("DOMContentLoaded", () => {
+    const script = document.createElement("script");
+    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyDBE0NRxtBR8kT17ejNmGtpGRI7O5oG-bU&callback=initMap";
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+  });
+  </script>
+
+</body>
+</html>
