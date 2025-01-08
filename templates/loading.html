@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading...</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ece9e6, #ffffff);
+            color: #333;
+            margin: 0;
+        }
+        .spinner {
+            margin: 20px auto;
+            width: 80px;
+            height: 80px;
+            border: 8px solid #ccc;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 20px;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        .refresh-btn {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 18px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .refresh-btn:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        .refresh-btn:active {
+            transform: scale(0.95);
+            background-color: #1c5980;
+        }
+        footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="spinner"></div>
+    <h1>Scraping in Progress...</h1>
+    <p>This might take a few minutes. Please be patient. We appreciate your understanding!</p>
+    <button class="refresh-btn" onclick="checkStatus()">Check Results</button>
+
+    <footer>
+        © 2025 WebScraper Inc. | Ensuring Data Accuracy
+    </footer>
+
+    <script>
+        function checkStatus() {
+            fetch('/results')
+                .then(response => {
+                    if (response.status === 200) {
+                        window.location.href = '/results';
+                    } else if (response.status === 202) {
+                        alert("Data is still being scraped. Please try again later.");
+                    } else {
+                        alert("Something went wrong. Please try again.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking status:', error);
+                    alert("An error occurred. Please try again later.");
+                });
+        }
+    </script>
+</body>
+</html>
