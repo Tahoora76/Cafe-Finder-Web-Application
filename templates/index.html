@@ -1,20 +1,31 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cafe Finder</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Cafe Finder</h1>
-        <form action="/search_results" method="get">
-            <label for="place">Enter location to find cafes:</label>
-            <input type="text" id="place" name="place" required>
-            <button type="submit">Search</button>
-        </form>
-    </header>
+    <div class="hero">
+        <div class="overlay"></div>
+        <div class="content">
+            <h1>Find the Best Cafes for Remote Work</h1>
+            <p>Explore cafes with Wi-Fi and a productive environment tailored for you.</p>
+            <form id="searchForm" action="/search" method="POST">
+                <input type="text" id="locationInput" name="location" placeholder="Enter your location" required>
+                <button type="submit">Find Cafes</button>
+            </form>
+            <div id="loadingMessage" style="display: none;">
+                <p>Finding cafes with remote working facilities...</p>
+                <div class="spinner"></div>
+            </div>
+            <div id="result">
+    <!-- The result of the search will be displayed here -->
+            </div>
+
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
